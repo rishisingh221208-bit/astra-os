@@ -1,0 +1,36 @@
+name: Astra-OS Final Binary Factory
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_final_image:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Raw Repository Data
+      uses: actions/checkout@v4
+
+    - name: Configure Bare-Metal Rust Environment
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: aarch64-unknown-none
+
+    - name: Compile Code Assets
+      run: cargo build --workspace --target aarch64-unknown-none --release
+
+    - name: Install Binary Engineering Tools
+      run: sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
+
+    - name: Convert to Final Flat Binary Data
+      run: |
+        objcopy -O binary target/aarch64-unknown-none/release/aura-kernel target/aarch64-unknown-none/release/aura_os.bin
+
+    - name: Deploy Final Bootable Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: final-bootable-astra-os
+        path: target/aarch64-unknown-none/release/aura_os.bin
+        
