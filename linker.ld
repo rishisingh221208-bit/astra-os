@@ -2,29 +2,35 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* QEMU's ARM64 virtual machine loads the kernel right here */
+    /* QEMU virt machine RAM starts here */
     . = 0x40000000;
 
-    .text : {
+    .text :
+    {
+        /* Ensure our Assembly entry point is placed first */
         *(.text._start)
         *(.text*)
     }
 
-    .rodata : {
+    .rodata :
+    {
         *(.rodata*)
     }
 
-    .data : {
+    .data :
+    {
         *(.data*)
     }
 
-    .bss : {
+    .bss :
+    {
+        __bss_start = .;
         *(.bss*)
+        __bss_end = .;
     }
 
-    /* Set up a safe 16KB stack space for our Rust functions to use */
-    . = ALIGN(16);
-    . += 0x4000; 
+    /* Reserve a 16KB stack and define the __stack_top symbol */
+    . = ALIGN(4096);
+    . += 0x4000;
     __stack_top = .;
 }
-
