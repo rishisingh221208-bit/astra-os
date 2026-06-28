@@ -1,7 +1,5 @@
-[target.aarch64-unknown-none]
-rustflags = [
-    "-C", "link-arg=-Tlinker.ld",
+[workspace]
+members = [
+    "aura-kernel",
+    "aura-shell"
 ]
-
-[build]
-target = "aarch64-unknown-none"
