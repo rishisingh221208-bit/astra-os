@@ -12,11 +12,12 @@ jobs:
     - name: Checkout Raw Repository Data
       uses: actions/checkout@v4
 
-    - name: Configure Bare-Metal Rust Environment
-      uses: dtolnay/rust-toolchain@stable
+        - name: Configure Bare-Metal Rust Environment
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: stable
+        toolchain: nightly
         targets: aarch64-unknown-none
+        
 
       
       uses: dtolnay/rust-toolchain@stable
