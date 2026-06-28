@@ -18,6 +18,12 @@ jobs:
         toolchain: stable
         targets: aarch64-unknown-none
 
+      
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: aarch64-unknown-none
+
     - name: Compile Code Assets
       run: cargo build --workspace --target aarch64-unknown-none --release
 
