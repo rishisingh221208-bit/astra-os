@@ -9,40 +9,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-        - name: Checkout Raw Repository Data
-      uses: actions/checkout@v4
+      - name: Checkout Raw Repository Data
+        uses: actions/checkout@v4
 
-    - name: Configure Bare-Metal Rust Environment
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        targets: aarch64-unknown-none
+      - name: Configure Bare-Metal Rust Environment
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          targets: aarch64-unknown-none
 
-    - name: Compile Code Assets
-    
-      run: cargo build --workspace --target aarch64-unknown-none --release
+      - name: Compile Code Assets
+        run: cargo build --workspace --target aarch64-unknown-none
 
-    - name: Install Binary Engineering Tools
-      run: sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
+      - name: Install Binary Engineering Tools
+        run: sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
 
-    - name: Convert to Final Flat Binary Data
-      run: |
-        aarch64-linux-gnu-objcopy -O binary target/aarch64-unknown-none/release/aura-kernel target/aarch64-unknown-none/release/aura_os.bin
+      - name: Convert to Final Flat Binary Data
+        run: |
+          aarch64-linux-gnu-objcopy -O binary target/aarch64-unknown-none/debug/aura-kernel aura-kernel.bin
 
-    - name: Deploy Final Bootable Image
-      uses: actions/upload-artifact@v4
-      with:
-        name: final-bootable-astra-os
-        path: target/aarch64-unknown-none/release/aura_os.bin
+      - name: Deploy Final Bootable Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-os-binary
+          path: aura-kernel.bin
 
-    - name: Install QEMU for Cloud Testing
-      run: sudo apt-get install -y qemu-system-arm
+      - name: Install QEMU for Cloud Testing
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-arm
 
-    - name: Run 10-Second Boot Test
-      run: |
-        echo "Booting Astra-OS in QEMU..."
-        timeout 10s qemu-system-aarch64 -M virt -cpu cortex-a53 -nographic -kernel target/aarch64-unknown-none/release/aura_os.bin || true
-        echo "OS successfully ran for 10 seconds without crashing!"
-        
-        
+      - name: Run 10-Second Boot Test
+        run: |
+          echo "Booting Astra-OS in QEMU..."
+          timeout 10s qemu-system-aarch64 -M virt -cpu cortex-a53 -nographic -kernel aura-kernel.bin || true
+          echo "OS successfully ran for 10 seconds without crashing!"
+          
