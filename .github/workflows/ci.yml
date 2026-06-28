@@ -9,23 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Raw Repository Data
+        - name: Checkout Raw Repository Data
       uses: actions/checkout@v4
 
-        - name: Configure Bare-Metal Rust Environment
+    - name: Configure Bare-Metal Rust Environment
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         targets: aarch64-unknown-none
-        
-
-      
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-        targets: aarch64-unknown-none
 
     - name: Compile Code Assets
+    
       run: cargo build --workspace --target aarch64-unknown-none --release
 
     - name: Install Binary Engineering Tools
