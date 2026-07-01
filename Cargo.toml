@@ -1,5 +1,10 @@
 [workspace]
 members = [
     "kernel",
-    "shell"
+    "aura-shell"
 ]
+
+[profile.release]
+opt-level = "z"     # Optimize binary size for bare-metal target
+lto = true          # Enable Link-Time Optimization
+panic = "abort"     # Core OS targets cannot unwind on panic
