@@ -40,6 +40,5 @@ jobs:
       - name: Run 10-Second Boot Test
         run: |
           echo "Booting Astra-OS in QEMU..."
-         timeout 10s qemu-system-aarch64 -M virt -cpu cortex-a53 -nographic -serial stdio -kernel aura-kernel.bin || true
+          timeout 10s qemu-system-aarch64 -M virt -cpu cortex-a53 -nographic -serial stdio -kernel aura-kernel.bin || true
           echo "OS successfully ran for 10 seconds without crashing!"
-          
