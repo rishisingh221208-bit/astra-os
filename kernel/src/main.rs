@@ -25,9 +25,14 @@ global_asm!(
     "b ."                         
 );
 
-#[no_mangle]
+// 1. Create a custom "blueprint" (struct) and align it to 16 bytes
 #[repr(align(16))]
-static mut STACK: [u8; 8192] = [0; 8192];
+struct AlignedStack([u8; 8192]);
+
+// 2. Build our stack using that perfectly aligned blueprint
+#[no_mangle]
+static mut STACK: AlignedStack = AlignedStack([0; 8192]);
+
 
 
 const UART_BASE: *mut u8 = 0x0900_0000 as *mut u8;
