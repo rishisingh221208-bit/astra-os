@@ -71,7 +71,7 @@ macro_rules! println {
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
     let os_name = "Astra-OS";
-    let version = 0.1;
+    let version = ("0.1");
     let memory_address = 0x40080000;
     
     println!("{} v{} Initialized...", os_name, version);
