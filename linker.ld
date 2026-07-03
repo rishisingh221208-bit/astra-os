@@ -2,35 +2,24 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* QEMU virt machine RAM starts here */
-    . = 0x40000000;
+    /* Tell the CPU exactly where QEMU drops it on boot */
+    . = 0x40080000;
 
-    .text :
-    {
-        /* Ensure our Assembly entry point is placed first */
+    /* Place the executable code first */
+    .text : { 
         *(.text._start)
-        *(.text*)
+        *(.text*) 
     }
 
-    .rodata :
-    {
-        *(.rodata*)
-    }
+    /* Read-only data (like your text strings!) */
+    .rodata : { *(.rodata*) }
 
-    .data :
-    {
-        *(.data*)
-    }
+    /* Read-write data */
+    .data : { *(.data*) }
 
-    .bss :
-    {
-        __bss_start = .;
+    /* Uninitialized memory */
+    .bss : {
         *(.bss*)
-        __bss_end = .;
+        *(COMMON)
     }
-
-    /* Reserve a 16KB stack and define the __stack_top symbol */
-    . = ALIGN(4096);
-    . += 0x4000;
-    __stack_top = .;
 }
