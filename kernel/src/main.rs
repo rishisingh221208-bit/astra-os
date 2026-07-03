@@ -26,7 +26,9 @@ global_asm!(
 );
 
 #[no_mangle]
+#[repr(align(16))]
 static mut STACK: [u8; 8192] = [0; 8192];
+
 
 const UART_BASE: *mut u8 = 0x0900_0000 as *mut u8;
 
