@@ -1,7 +1,9 @@
-[target.aarch64-unknown-none]
-rustflags = [
-    "-C", "link-arg=-Tlinker.ld",
-]
-
 [build]
+# Make sure we are building for bare-metal ARM
 target = "aarch64-unknown-none"
+
+[target.aarch64-unknown-none]
+# Hand the custom linker script to the compiler
+rustflags = [
+    "-C", "link-arg=-Tlinker.ld"
+]
