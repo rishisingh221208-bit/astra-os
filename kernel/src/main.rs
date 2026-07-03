@@ -2,20 +2,35 @@
 #![no_main]
 
 use core::panic::PanicInfo;
-// Import Rust's core formatting tools
-use core::fmt::{self, Write}; 
+use core::fmt::{self, Write};
+// Import global_asm to give the CPU its first instructions
+use core::arch::global_asm; 
+
+// 1. Set up the Stack Pointer in pure assembly
+global_asm!(
+    ".section .text._start",
+    ".globl _start",
+    "_start:",
+    "adrp x0, STACK",             // Find the memory we reserved below
+    "add x0, x0, :lo12:STACK",
+    "add x0, x0, 8192",           // Move to the top of our 8KB stack
+    "mov sp, x0",                 // Set the CPU's Stack Pointer!
+    "bl kmain",                   // Jump safely to our Rust kernel main
+    "b ."                         // If it returns, freeze safely
+);
+
+// 2. Reserve 8 Kilobytes of memory specifically for the macro to use
+#[no_mangle]
+static mut STACK: [u8; 8192] = [0; 8192];
 
 const UART_BASE: *mut u8 = 0x0900_0000 as *mut u8;
 
-// 1. Create a struct to represent our hardware
 struct Uart;
 
-// 2. Implement Rust's 'Write' trait for our hardware
 impl Write for Uart {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for byte in s.bytes() {
             unsafe {
-                // This is the ONLY unsafe block needed for printing
                 core::ptr::write_volatile(UART_BASE, byte);
             }
         }
@@ -23,31 +38,26 @@ impl Write for Uart {
     }
 }
 
-// 3. Create a hidden printing engine that the macros will safely use
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     let mut uart = Uart;
-    // This tells Rust to format the text and pipe it securely to the UART
     uart.write_fmt(args).unwrap();
 }
 
-// 4. Define the standard 'print!' macro
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::_print(format_args!($($arg)*)));
 }
 
-// 5. Define the standard 'println!' macro (adds a newline at the end)
 #[macro_export]
 macro_rules! println {
     () => ($crate::print!("\n"));
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
-// 6. The main entry point
+// 3. Renamed to 'kmain' (Kernel Main) since assembly handles the actual start
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
-    // We can now format variables safely without risking buffer overflows!
+pub extern "C" fn kmain() -> ! {
     let os_name = "Astra-OS";
     let version = 0.1;
     let memory_address = 0x40080000;
@@ -59,10 +69,8 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
-// 7. Upgraded Panic Handler
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    // If the system detects a security fault, it will print the exact location
     println!("SYSTEM PANIC: {}", info);
     loop {}
 }
