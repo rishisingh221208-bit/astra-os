@@ -3,23 +3,28 @@
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
-// Import global_asm to give the CPU its first instructions
 use core::arch::global_asm; 
 
-// 1. Set up the Stack Pointer in pure assembly
+// 1. HARDWARE PING: Print 'A' using pure assembly before Rust even wakes up!
 global_asm!(
     ".section .text._start",
     ".globl _start",
     "_start:",
-    "adrp x0, STACK",             // Find the memory we reserved below
+    "ldr x1, =0x09000000",        // Load UART hardware address
+    "mov w2, 65",                 // ASCII code for 'A'
+    "strb w2, [x1]",              // Force print 'A'
+    "mov w2, 10",                 // ASCII code for newline
+    "strb w2, [x1]",              // Force print newline
+    
+    // Normal Stack Setup
+    "adrp x0, STACK",             
     "add x0, x0, :lo12:STACK",
-    "add x0, x0, 8192",           // Move to the top of our 8KB stack
-    "mov sp, x0",                 // Set the CPU's Stack Pointer!
-    "bl kmain",                   // Jump safely to our Rust kernel main
-    "b ."                         // If it returns, freeze safely
+    "add x0, x0, 8192",           
+    "mov sp, x0",                 
+    "bl kmain",                   
+    "b ."                         
 );
 
-// 2. Reserve 8 Kilobytes of memory specifically for the macro to use
 #[no_mangle]
 static mut STACK: [u8; 8192] = [0; 8192];
 
@@ -44,6 +49,7 @@ pub fn _print(args: fmt::Arguments) {
     uart.write_fmt(args).unwrap();
 }
 
+// 2. BUFFER FIX: Added '\r\n' to force the QEMU terminal to print immediately
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::_print(format_args!($($arg)*)));
@@ -51,11 +57,10 @@ macro_rules! print {
 
 #[macro_export]
 macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+    () => ($crate::print!("\r\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\r\n", format_args!($($arg)*)));
 }
 
-// 3. Renamed to 'kmain' (Kernel Main) since assembly handles the actual start
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
     let os_name = "Astra-OS";
@@ -71,6 +76,6 @@ pub extern "C" fn kmain() -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("SYSTEM PANIC: {}", info);
+    println!("SYSTEM PANIC: {}\r\n", info);
     loop {}
 }
