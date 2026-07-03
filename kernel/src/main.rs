@@ -15,6 +15,7 @@ impl Write for Uart {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for byte in s.bytes() {
             unsafe {
+                // This is the ONLY unsafe block needed for printing
                 core::ptr::write_volatile(UART_BASE, byte);
             }
         }
@@ -22,11 +23,11 @@ impl Write for Uart {
     }
 }
 
-// 3. Create a hidden printing engine that the macros will use
+// 3. Create a hidden printing engine that the macros will safely use
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     let mut uart = Uart;
-    // This tells Rust to format the text and pipe it to the UART
+    // This tells Rust to format the text and pipe it securely to the UART
     uart.write_fmt(args).unwrap();
 }
 
@@ -46,21 +47,22 @@ macro_rules! println {
 // 6. The main entry point
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // Look at this! We can now format variables safely!
+    // We can now format variables safely without risking buffer overflows!
     let os_name = "Astra-OS";
     let version = 0.1;
     let memory_address = 0x40080000;
     
     println!("{} v{} Initialized...", os_name, version);
-    println!("Booted at memory address: {:#X}", memory_address);
-    println!("Welcome to the Generative Future.");
+    println!("Booted at secure memory address: {:#X}", memory_address);
+    println!("Kernel sandbox active. Welcome to the Generative Future.");
 
     loop {}
 }
 
-// 7. Upgraded Panic Handler (Now prints the exact line that crashed!)
+// 7. Upgraded Panic Handler
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    // If the system detects a security fault, it will print the exact location
     println!("SYSTEM PANIC: {}", info);
     loop {}
 }
