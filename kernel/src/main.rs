@@ -5,7 +5,7 @@ mod mmu;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
-use core::arch::global_asm; 
+use core::arch::{global_asm, asm};
 
 // 1. HARDWARE PING: Print 'A' using pure assembly before Rust even wakes up!
 global_asm!(
@@ -72,8 +72,49 @@ macro_rules! println {
 
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
+    
+    // ==========================================
+    // PHASE 3: ACTIVATE THE HARDWARE FIREWALL
+    // ==========================================
+    unsafe {
+        // 1. Populate the Page Tables with your Physical Addresses
+        mmu::build_identity_map();
+
+        // 2. The Final Hardware Switch (Raw Assembly)
+        asm!(
+            // A. Configure Memory Attributes (Bypass caches to prevent boot crashes)
+            "ldr {tmp}, =0x00", 
+            "msr mair_el1, {tmp}",
+            
+            // B. Configure Translation Rules (Establish a 39-bit Virtual Address Space)
+            "ldr {tmp}, =0x19", 
+            "msr tcr_el1, {tmp}",
+            
+            // C. Load the exact Physical Address of your L1_TABLE into the hardware
+            "adrp {tmp}, {table}",
+            "add {tmp}, {tmp}, :lo12:{table}",
+            "msr ttbr0_el1, {tmp}",
+            
+            // D. Flush all hardware translation caches before the transition
+            "tlbi vmalle1is",
+            "dsb ish",
+            "isb",
+            
+            // E. THE SWITCH: Flip Bit 0 of the System Register to power on the MMU
+            "mrs {tmp}, sctlr_el1",
+            "orr {tmp}, {tmp}, #1",
+            "msr sctlr_el1, {tmp}",
+            "isb", // Synchronize the CPU to prevent it from dropping the signal
+            
+            // Rust will safely allocate a temporary CPU register for this operation
+            tmp = out(reg) _,
+            table = sym mmu::L1_TABLE,
+        );
+    }
+    // ==========================================
+
     let os_name = "Astra-OS";
-    let version = ("0.1");
+    let version = ("0.1"); 
     let memory_address = 0x40080000;
     
     println!("{} v{} Initialized...", os_name, version);
