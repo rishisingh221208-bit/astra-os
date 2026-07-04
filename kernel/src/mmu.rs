@@ -38,3 +38,18 @@ pub const FLAG_PAGE: u64  = 1 << 1;
 // Bit 10: Access Flag (The AArch64 processor requires this to be 1, or it crashes)
 pub const FLAG_ACCESS: u64 = 1 << 10;
 
+// ==========================================
+// PHASE 2: THE IDENTITY MAP
+// ==========================================
+
+pub unsafe fn build_identity_map() {
+    // 1st Gigabyte Block: Covers 0x0000_0000 up to 0x3FFF_FFFF. 
+    // This perfectly encapsulates your UART hardware port at 0x0900_0000.
+    // Notice we do NOT use FLAG_TABLE here. Leaving that bit 0 tells the CPU this is a massive Block.
+    L1_TABLE.entries[0] = 0x0000_0000 | FLAG_VALID | FLAG_ACCESS;
+    
+    // 2nd Gigabyte Block: Covers 0x4000_0000 up to 0x7FFF_FFFF.
+    // This perfectly encapsulates your Kernel running in RAM at 0x4008_0000.
+    L1_TABLE.entries[1] = 0x4000_0000 | FLAG_VALID | FLAG_ACCESS;
+}
+
