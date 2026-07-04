@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+mod mmu;
+
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
 use core::arch::global_asm; 
