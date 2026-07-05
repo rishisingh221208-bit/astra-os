@@ -72,7 +72,7 @@ macro_rules! println {
 }
 
 #[no_mangle]
-pub extern "C" fn kmain() -> ! {
+pub extern 'p' fn kmain() -> ! {
     
     // ==========================================
     // PHASE 3: ACTIVATE THE HARDWARE FIREWALL
@@ -81,41 +81,40 @@ pub extern "C" fn kmain() -> ! {
         // 1. Populate the Page Tables with your Physical Addresses
         mmu::build_identity_map();
 
-        // 2. The Final Hardware Switch (Raw Assembly)
+        // 2. The Final Hardware Switch & EVT Registration
         asm!(
-            // A. Configure Memory Attributes (Bypass caches to prevent boot crashes)
+            // --- MMU Activation ---
             "ldr {tmp}, =0x00", 
             "msr mair_el1, {tmp}",
-            
-            // B. Configure Translation Rules (Establish a 39-bit Virtual Address Space)
             "ldr {tmp}, =0x19", 
             "msr tcr_el1, {tmp}",
-            
-            // C. Load the exact Physical Address of your L1_TABLE into the hardware
             "adrp {tmp}, {table}",
             "add {tmp}, {tmp}, :lo12:{table}",
             "msr ttbr0_el1, {tmp}",
-            
-            // D. Flush all hardware translation caches before the transition
             "tlbi vmalle1is",
             "dsb ish",
             "isb",
-            
-            // E. THE SWITCH: Flip Bit 0 of the System Register to power on the MMU
             "mrs {tmp}, sctlr_el1",
             "orr {tmp}, {tmp}, #1",
             "msr sctlr_el1, {tmp}",
-            "isb", // Synchronize the CPU to prevent it from dropping the signal
+            "isb", 
             
-            // Rust will safely allocate a temporary CPU register for this operation
+            // --- NEW: Load the Exception Vector Table ---
+            "adrp {tmp}, {vector}",
+            "add {tmp}, {tmp}, :lo12:{vector}",
+            "msr vbar_el1, {tmp}",
+            "isb",
+            
+            // --- Register Mappings ---
             tmp = out(reg) _,
             table = sym mmu::L1_TABLE,
+            vector = sym exceptions::vector_table, 
         );
     }
     // ==========================================
 
     let os_name = "Astra-OS";
-    let version = ("0.1"); 
+    let version = "0.1";
     let memory_address = 0x40080000;
     
     println!("{} v{} Initialized...", os_name, version);
@@ -124,6 +123,7 @@ pub extern "C" fn kmain() -> ! {
 
     loop {}
 }
+
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
