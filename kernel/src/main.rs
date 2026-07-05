@@ -72,7 +72,7 @@ macro_rules! println {
 }
 
 #[no_mangle]
-pub extern 'p' fn kmain() -> ! {
+pub extern "C" fn kmain() -> ! {
     
     // ==========================================
     // PHASE 3: ACTIVATE THE HARDWARE FIREWALL
