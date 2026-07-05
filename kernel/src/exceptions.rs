@@ -37,4 +37,8 @@ pub extern "C" fn irq_trap() {
     crate::println!("HARDWARE PING: An interrupt was caught!");
     loop {} // We will expand this to read the actual keyboard key later
 }
+// The Bridge: Tell the Rust compiler that our Assembly label exists
+extern "C" {
+    pub fn vector_table();
+}
 
