@@ -2,6 +2,7 @@
 #![no_main]
 
 mod mmu;
+mod exceptions;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
