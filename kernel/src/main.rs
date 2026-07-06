@@ -3,6 +3,7 @@
 
 mod mmu;
 mod exceptions;
+mod keyboard;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
