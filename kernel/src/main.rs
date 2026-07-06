@@ -4,6 +4,7 @@
 mod mmu;
 mod exceptions;
 mod keyboard;
+mod framebuffer;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
