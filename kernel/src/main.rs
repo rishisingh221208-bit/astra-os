@@ -122,7 +122,21 @@ pub extern "C" fn kmain() -> ! {
     println!("{} v{} Initialized...", os_name, version);
     println!("Booted at secure memory address: {:#X}", memory_address);
         println!("Kernel sandbox active. Welcome to the Generative Future.");
+    
+    // ==========================================
+    // WAKE UP THE MOBILE DISPLAY
+    // ==========================================
+    let display = framebuffer::Framebuffer {
+        width: 1080,             // Standard mobile width
+        height: 1920,            // Standard mobile height
+        pitch: 1080 * 4,         // 4 bytes per pixel (RGBA)
+        base_address: 0x40100000 as *mut u32, // Safe memory zone for video RAM
+    };
 
+    // Paint the screen Astra Blue!
+    display.clear_screen(0x000000FF);
+    println!("Visual Frontend engaged. Screen painted Astra Blue!");
+    
     // Start the Interactive Terminal
     loop {
         // Read the exact key the user pressed
