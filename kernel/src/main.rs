@@ -120,11 +120,19 @@ pub extern "C" fn kmain() -> ! {
     
     println!("{} v{} Initialized...", os_name, version);
     println!("Booted at secure memory address: {:#X}", memory_address);
-    println!("Kernel sandbox active. Welcome to the Generative Future.");
+        println!("Kernel sandbox active. Welcome to the Generative Future.");
 
-    loop {}
+    // Start the Interactive Terminal
+    loop {
+        // Read the exact key the user pressed
+        let key = keyboard::read_key();
+        
+        // Echo it directly back to the screen so the user can see it!
+        unsafe {
+            core::ptr::write_volatile(0x09000000 as *mut u8, key);
+        }
+    }
 }
-
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
