@@ -5,6 +5,7 @@ mod mmu;
 mod exceptions;
 mod keyboard;
 mod framebuffer;
+mod timer;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
@@ -136,18 +137,35 @@ pub extern "C" fn kmain() -> ! {
     // Paint the screen Astra Blue!
     display.clear_screen(0x000000FF);
     println!("Visual Frontend engaged. Screen painted Astra Blue!");
+
+        // ==========================================
+    // POWER MANAGEMENT & TIMERS
+    // ==========================================
+    // 1. Get the physical frequency of the device's crystal oscillator
+    let cpu_freq = timer::get_frequency();
     
-    // Start the Interactive Terminal
+    // 2. Set the hardware countdown for exactly 1 second
+    timer::set_countdown(cpu_freq);
+    
+    // 3. Turn the physical timer on
+    timer::enable();
+    println!("Hardware clock enabled running at {} Hz.", cpu_freq);
+    println!("CPU entering low-power sleep mode to save battery...");
+
+    // ==========================================
+    // THE MOBILE EVENT LOOP
+    // ==========================================
     loop {
-        // Read the exact key the user pressed
-        let key = keyboard::read_key();
-        
-        // Echo it directly back to the screen so the user can see it!
+        // Put the CPU into a deep sleep. 
+        // It uses almost zero battery while waiting on this line!
         unsafe {
-            core::ptr::write_volatile(0x09000000 as *mut u8, key);
+            core::arch::asm!("wfi"); 
         }
+        
+        // When the timer hits zero, it fires an interrupt, wakes up the CPU, 
+        // and the loop repeats, putting it right back to sleep.
     }
-}
+    
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
