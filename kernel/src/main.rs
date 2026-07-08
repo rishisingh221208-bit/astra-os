@@ -152,7 +152,7 @@ pub extern "C" fn kmain() -> ! {
     println!("Hardware clock enabled running at {} Hz.", cpu_freq);
     println!("CPU entering low-power sleep mode to save battery...");
 
-    // ==========================================
+        // ==========================================
     // THE MOBILE EVENT LOOP
     // ==========================================
     loop {
@@ -161,14 +161,12 @@ pub extern "C" fn kmain() -> ! {
         unsafe {
             core::arch::asm!("wfi"); 
         }
-        
-        // When the timer hits zero, it fires an interrupt, wakes up the CPU, 
-        // and the loop repeats, putting it right back to sleep.
     }
-    
+} // <-- THIS is the vital brace that closes kmain!
 
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("SYSTEM PANIC: {}\r\n", info);
     loop {}
 }
+
