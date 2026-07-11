@@ -170,16 +170,20 @@ pub extern "C" fn kmain() -> ! {
         }
     }
 }
+// ==========================================
+// SYSTEM ERROR HANDLERS
+// ==========================================
 
-#[panic_handler]
 #[alloc_error_handler]
 fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
     println!("ALLOCATION ERROR: Failed to allocate {} bytes.", layout.size());
     loop {}
 }
 
+#[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("SYSTEM PANIC: {}\r\n", info);
     loop {}
 }
+
 
