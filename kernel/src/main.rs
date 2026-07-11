@@ -6,6 +6,7 @@ mod exceptions;
 mod keyboard;
 mod framebuffer;
 mod timer;
+mod gic; 
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
