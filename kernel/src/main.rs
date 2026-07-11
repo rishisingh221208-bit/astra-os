@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![feature(alloc_error_handler)]
 
 mod mmu;
 mod exceptions;
@@ -7,6 +8,7 @@ mod keyboard;
 mod framebuffer;
 mod timer;
 mod gic; 
+mod allocator;
 
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
@@ -167,9 +169,15 @@ pub extern "C" fn kmain() -> ! {
             core::arch::asm!("wfi"); 
         }
     }
-} // <-- THIS is the vital brace that closes kmain!
+}
 
 #[panic_handler]
+#[alloc_error_handler]
+fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
+    println!("ALLOCATION ERROR: Failed to allocate {} bytes.", layout.size());
+    loop {}
+}
+
 fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("SYSTEM PANIC: {}\r\n", info);
     loop {}
