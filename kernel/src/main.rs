@@ -141,13 +141,17 @@ pub extern "C" fn kmain() -> ! {
         // ==========================================
     // POWER MANAGEMENT & TIMERS
     // ==========================================
-    // 1. Get the physical frequency of the device's crystal oscillator
+    // 1. Boot up the Interrupt Switchboard
+    gic::init();
+    println!("GIC Switchboard active. Routing hardware signals...");
+
+    // 2. Get the physical frequency of the device's crystal oscillator
     let cpu_freq = timer::get_frequency();
     
-    // 2. Set the hardware countdown for exactly 1 second
+    // 3. Set the hardware countdown for exactly 1 second
     timer::set_countdown(cpu_freq);
     
-    // 3. Turn the physical timer on
+    // 4. Turn the physical timer on
     timer::enable();
     println!("Hardware clock enabled running at {} Hz.", cpu_freq);
     println!("CPU entering low-power sleep mode to save battery...");
