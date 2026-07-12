@@ -9,6 +9,7 @@ mod framebuffer;
 mod timer;
 mod gic; 
 mod allocator;
+mod ui;
 
 extern crate alloc;
 use alloc::string::String;
@@ -162,18 +163,23 @@ pub extern "C" fn kmain() -> ! {
     println!("CPU entering low-power sleep mode to save battery...");
 
         // ==========================================
-    // DYNAMIC HEAP MEMORY TEST
+    // UI ENGINE INITIALIZATION
     // ==========================================
-    println!("Testing Slab Allocator...");
+    println!("Booting AstraOS Window Manager...");
     
-    // 1. Ask the Bump Allocator for memory on the fly
-    let mut dynamic_text = String::from("Heap Allocation Successful!");
+    // 1. Create the dynamic UI Tree
+    let mut window_manager = ui::WindowManager::new();
     
-    // 2. Modify the string in memory (proving we have write access to the RAM)
-    dynamic_text.push_str(" The UI Engine is ready to build.");
+    // 2. Register our first virtual component (A system nav bar)
+    window_manager.add_component(
+        String::from("NavBar"), 
+        0,      // X coordinate
+        1800,   // Y coordinate (bottom of screen)
+        1080,   // Full width
+        120     // Height
+    );
     
-    // 3. Print the dynamically generated text to the console
-    println!("Dynamic Data: {}", dynamic_text);
+    println!("UI Engine active. {} component(s) loaded into memory.", window_manager.elements.len());
     
         // ==========================================
     // THE MOBILE EVENT LOOP
