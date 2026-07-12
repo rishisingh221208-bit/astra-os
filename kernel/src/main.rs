@@ -10,6 +10,8 @@ mod timer;
 mod gic; 
 mod allocator;
 
+extern crate alloc;
+use alloc::string::String;
 use core::panic::PanicInfo;
 use core::fmt::{self, Write};
 use core::arch::{global_asm, asm};
@@ -159,6 +161,20 @@ pub extern "C" fn kmain() -> ! {
     println!("Hardware clock enabled running at {} Hz.", cpu_freq);
     println!("CPU entering low-power sleep mode to save battery...");
 
+        // ==========================================
+    // DYNAMIC HEAP MEMORY TEST
+    // ==========================================
+    println!("Testing Slab Allocator...");
+    
+    // 1. Ask the Bump Allocator for memory on the fly
+    let mut dynamic_text = String::from("Heap Allocation Successful!");
+    
+    // 2. Modify the string in memory (proving we have write access to the RAM)
+    dynamic_text.push_str(" The UI Engine is ready to build.");
+    
+    // 3. Print the dynamically generated text to the console
+    println!("Dynamic Data: {}", dynamic_text);
+    
         // ==========================================
     // THE MOBILE EVENT LOOP
     // ==========================================
