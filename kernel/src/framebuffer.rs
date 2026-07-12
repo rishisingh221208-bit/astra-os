@@ -24,5 +24,28 @@ impl Framebuffer {
             }
         }
     }
+    // ==========================================
+    // UI RENDER METHODS
+    // ==========================================
+    
+    // Draw a solid rectangle (for NavBars, Buttons, and Panels)
+    pub fn draw_rect(&self, start_x: u32, start_y: u32, width: u32, height: u32, color: u32) {
+        for y in start_y..(start_y + height) {
+            for x in start_x..(start_x + width) {
+                // Critical Security Check: Prevent drawing outside the screen glass!
+                // If we don't do this, the OS will overwrite memory and crash.
+                if x < self.width && y < self.height {
+                    let pixel_offset = (y * self.width) + x;
+                    unsafe {
+                        core::ptr::write_volatile(
+                            self.base_address.offset(pixel_offset as isize), 
+                            color
+                        );
+                    }
+                }
+            }
+        }
+    }
+    
 }
 
