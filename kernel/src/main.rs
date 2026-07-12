@@ -181,6 +181,27 @@ pub extern "C" fn kmain() -> ! {
     
     println!("UI Engine active. {} component(s) loaded into memory.", window_manager.elements.len());
     
+    // ==========================================
+    // THE RENDER LOOP
+    // ==========================================
+    println!("Initializing Graphics Render Pipeline...");
+    
+    // Iterate through every dynamic component in the Window Manager's RAM
+    for component in window_manager.elements.iter() {
+        if component.is_active {
+            // Draw the component! Let's use a sleek dark grey (0x00222222) for the NavBar
+            display.draw_rect(
+                component.x, 
+                component.y, 
+                component.width, 
+                component.height, 
+                0x00222222 
+            );
+        }
+    }
+    
+    println!("Render complete. UI layer successfully pushed to physical display!");
+    
         // ==========================================
     // THE MOBILE EVENT LOOP
     // ==========================================
