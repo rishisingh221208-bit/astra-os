@@ -178,6 +178,14 @@ pub extern "C" fn kmain() -> ! {
         1080,   // Full width
         120     // Height
     );
+        // Add a modern "App Card" to the center of the screen
+    window_manager.add_component(
+        String::from("AppCard"), 
+        140,    // X coordinate (centered on a 1080p screen)
+        500,    // Y coordinate 
+        800,    // Width
+        600     // Height
+    );
     
     println!("UI Engine active. {} component(s) loaded into memory.", window_manager.elements.len());
     
@@ -185,18 +193,30 @@ pub extern "C" fn kmain() -> ! {
     // THE RENDER LOOP
     // ==========================================
     println!("Initializing Graphics Render Pipeline...");
-    
-    // Iterate through every dynamic component in the Window Manager's RAM
+
+        // Iterate through every dynamic component in the Window Manager's RAM
     for component in window_manager.elements.iter() {
         if component.is_active {
-            // Draw the component! Let's use a sleek dark grey (0x00222222) for the NavBar
-            display.draw_rect(
-                component.x, 
-                component.y, 
-                component.width, 
-                component.height, 
-                0x00222222 
-            );
+            if component.id == "AppCard" {
+                // Draw the premium rounded App Card (White, with a 60px corner radius)
+                display.draw_rounded_rect(
+                    component.x, 
+                    component.y, 
+                    component.width, 
+                    component.height, 
+                    60, 
+                    0x00FFFFFF
+                );
+            } else {
+                // Draw everything else normally (like the NavBar)
+                display.draw_rect(
+                    component.x, 
+                    component.y, 
+                    component.width, 
+                    component.height, 
+                    0x00222222 
+                );
+            }
         }
     }
     
