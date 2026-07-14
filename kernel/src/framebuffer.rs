@@ -46,6 +46,67 @@ impl Framebuffer {
             }
         }
     }
+    // ==========================================
+    // PREMIUM UI: ROUNDED CORNERS
+    // ==========================================
+    
+    // Draw a rectangle with smooth rounded corners (Squircles)
+    pub fn draw_rounded_rect(&self, start_x: u32, start_y: u32, width: u32, height: u32, radius: u32, color: u32) {
+        let r_squared = radius * radius;
+
+        for y in start_y..(start_y + height) {
+            for x in start_x..(start_x + width) {
+                // Critical Security Check
+                if x >= self.width || y >= self.height { continue; }
+
+                let mut draw_pixel = true;
+
+                // Calculate distances from the nearest corner center
+                let mut dx = 0;
+                let mut dy = 0;
+
+                // Top-Left Corner
+                if x < start_x + radius && y < start_y + radius {
+                    dx = (start_x + radius) - x;
+                    dy = (start_y + radius) - y;
+                }
+                // Top-Right Corner
+                else if x >= start_x + width - radius && y < start_y + radius {
+                    dx = x - (start_x + width - radius) + 1;
+                    dy = (start_y + radius) - y;
+                }
+                // Bottom-Left Corner
+                else if x < start_x + radius && y >= start_y + height - radius {
+                    dx = (start_x + radius) - x;
+                    dy = y - (start_y + height - radius) + 1;
+                }
+                // Bottom-Right Corner
+                else if x >= start_x + width - radius && y >= start_y + height - radius {
+                    dx = x - (start_x + width - radius) + 1;
+                    dy = y - (start_y + height - radius) + 1;
+                }
+
+                // If the pixel is inside a corner zone, check if it falls outside the radius
+                if dx > 0 || dy > 0 {
+                    if dx * dx + dy * dy > r_squared {
+                        draw_pixel = false; // Outside the curve, skip this pixel!
+                    }
+                }
+
+                // If the pixel is inside the main body OR inside the curve, draw it
+                if draw_pixel {
+                    let pixel_offset = (y * self.width) + x;
+                    unsafe {
+                        core::ptr::write_volatile(
+                            self.base_address.offset(pixel_offset as isize), 
+                            color
+                        );
+                    }
+                }
+            }
+        }
+
+    }
     
 }
 
