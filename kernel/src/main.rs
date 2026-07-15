@@ -219,6 +219,20 @@ pub extern "C" fn kmain() -> ! {
             }
         }
     }
+     // ==========================================
+    // PREMIUM UI TEST: GLASSMORPHISM
+    // ==========================================
+    println!("Rendering Alpha Transparency Layer...");
+    
+    // Draw a translucent white glass panel overlapping the AppCard and background.
+    // 0x88FFFFFF means: 88 (Hex) = 53% Opacity, FFFFFF = White
+    display.draw_rect_alpha(
+        100,    // X coordinate
+        900,    // Y coordinate (overlapping the bottom of your AppCard)
+        880,    // Width
+        300,    // Height
+        0x88FFFFFF 
+    );
     
     println!("Render complete. UI layer successfully pushed to physical display!");
     
