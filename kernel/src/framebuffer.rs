@@ -164,5 +164,48 @@ impl Framebuffer {
             }
         }
     }
+        // ==========================================
+    // THE TYPOGRAPHY ENGINE (TEXT RENDERING)
+    // ==========================================
+    
+    // Draw a single character using the 8x8 bit matrix
+    pub fn draw_char(&self, start_x: u32, start_y: u32, character: char, color: u32, scale: u32) {
+        use font8x8::UnicodeFonts;
+        
+        // Fetch the bit array for this specific letter
+        if let Some(bitmap) = font8x8::BASIC_FONTS.get(character) {
+            for (row_idx, row) in bitmap.iter().enumerate() {
+                for col_idx in 0..8 {
+                    // Check if the specific bit is a 1 (meaning we should draw ink here)
+                    if (*row & (1 << col_idx)) != 0 {
+                        // We use a scale multiplier so the text isn't microscopic on a 1080p screen
+                        self.draw_rect(
+                            start_x + (col_idx as u32 * scale), 
+                            start_y + (row_idx as u32 * scale), 
+                            scale, 
+                            scale, 
+                            color
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    // Draw a full sentence by looping through the characters
+    pub fn draw_string(&self, x: u32, y: u32, text: &str, color: u32, scale: u32) {
+        let mut cursor_x = x;
+        for c in text.chars() {
+            if c == '\n' {
+                // If we hit a newline, don't draw it. Move the cursor down!
+                cursor_x = x;
+                // Move down by 8 pixels * scale
+            } else {
+                self.draw_char(cursor_x, y, c, color, scale);
+                // Move cursor to the right for the next letter (8 pixels + 1 pixel gap * scale)
+                cursor_x += 9 * scale;
+            }
+        }
+    }
 }
 
