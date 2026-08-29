@@ -6,6 +6,5 @@ target = "aarch64-unknown-none"
 # Hand the custom linker script to the compiler
 rustflags = [
     "-C", "link-arg=-Tlinker.ld"
-    font8x8 = { version = "0.3.3", default-features = false }
-    
+    font8x8 = { version = "0.3.3", default-features = false }   
 ]
