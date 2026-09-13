@@ -247,19 +247,36 @@ pub extern "C" fn kmain() -> ! {
     let mut cursor_x = 350;
     let mut cursor_y = 800;
 
-    loop {
+     loop {
         // Check if the hardware sent a keystroke
         if let Some(key) = serial::read_char() {
-            println!("HARDWARE INTERRUPT: Key pressed -> {}", key);
             
-            // 1. Draw the physical character to the screen (Black text, Scale 4)
-            display.draw_char(cursor_x, cursor_y, key, 0x00000000, 4);
-            
-            // 2. Move the cursor to the right so the next letter doesn't overlap
-            // (8 pixels wide * 4 scale = 32) + 4 pixels of spacing = 36
-            cursor_x += 36; 
+            // 1. Intercept the Backspace or Delete key signals
+            if key == '\x08' || key == '\x7F' {
+                // Prevent the cursor from deleting past the left edge of our text area
+                if cursor_x > 350 {
+                    // Move the cursor backward by one character space
+                    cursor_x -= 36;
+                    
+                    // "Erase" the letter by drawing a solid white box over it
+                    // The font is 8x8 scaled by 4, making it 32x32 pixels total
+                    display.draw_rect(cursor_x, cursor_y, 32, 32, 0x00FFFFFF);
+                    
+                    println!("HARDWARE INTERRUPT: Backspace executed");
+                }
+            } else {
+                // 2. Normal Character Rendering
+                println!("HARDWARE INTERRUPT: Key pressed -> {}", key);
+                
+                // Draw the character to the screen (Black text, Scale 4)
+                display.draw_char(cursor_x, cursor_y, key, 0x00000000, 4);
+                
+                // Move the cursor to the right
+                cursor_x += 36; 
+            }
         }
-    }
+     }
+    
     
 }
 // ==========================================
