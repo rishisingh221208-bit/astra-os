@@ -237,17 +237,30 @@ pub extern "C" fn kmain() -> ! {
     );
     
     println!("Render complete. UI layer successfully pushed to physical display!");
-    
+
         // ==========================================
     // THE MOBILE EVENT LOOP
     // ==========================================
+    println!("AstraOS is now listening for hardware input...");
+
+    // Set the starting cursor coordinates inside your white App Card
+    let mut cursor_x = 350;
+    let mut cursor_y = 800;
+
     loop {
-        // Put the CPU into a deep sleep. 
-        // It uses almost zero battery while waiting on this line!
-        unsafe {
-            core::arch::asm!("wfi"); 
+        // Check if the hardware sent a keystroke
+        if let Some(key) = serial::read_char() {
+            println!("HARDWARE INTERRUPT: Key pressed -> {}", key);
+            
+            // 1. Draw the physical character to the screen (Black text, Scale 4)
+            display.draw_char(cursor_x, cursor_y, key, 0x00000000, 4);
+            
+            // 2. Move the cursor to the right so the next letter doesn't overlap
+            // (8 pixels wide * 4 scale = 32) + 4 pixels of spacing = 36
+            cursor_x += 36; 
         }
     }
+    
 }
 // ==========================================
 // SYSTEM ERROR HANDLERS
