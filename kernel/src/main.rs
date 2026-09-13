@@ -10,6 +10,8 @@ mod timer;
 mod gic; 
 mod allocator;
 mod ui;
+mod interrupts;
+mod serial;
 
 extern crate alloc;
 use alloc::string::String;
